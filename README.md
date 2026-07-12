@@ -4,10 +4,6 @@ Završni rad — aplikacija za praćenje treninga. Korisnik unosi treninge, sast
 
 Frontend je Quasar/Vue, backend Node + Express + Prisma, baza MySQL. Android verzija ide preko Capacitora.
 
-## Baza
-
-Shema je u `backend/prisma/schema.prisma` — User, Exercise, WorkoutPlan, WorkoutSession, SetLog, Goal, BodyMeasurement.
-
 ## Funkcionalnosti
 
 - Registracija/login
