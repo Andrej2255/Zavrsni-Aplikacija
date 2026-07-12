@@ -19,8 +19,4 @@ Shema je u `backend/prisma/schema.prisma` — User, Exercise, WorkoutPlan, Worko
 - Ciljevi
 
 ## Ostalo za napraviti
-
-- Bolji error handling na frontu
-- Cleartext HTTP fix je samo za dev, za produkciju treba HTTPS
-- Testiranje na starijim verzijama Androida
-- Deploy (za sad radi samo lokalno)
+Dodati slike za svaku vjezbu
