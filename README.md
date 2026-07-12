@@ -1,70 +1,63 @@
-# Gym Tracker — Aplikacija za praćenje treninga i napretka
+# Gym Tracker
 
-Završni rad: aplikacija koja korisnicima omogućava praćenje vlastitih treninga, planiranje vježbi i evidenciju napretka kroz vrijeme.
+Završni rad — aplikacija za praćenje treninga. Korisnik može voditi evidenciju vježbi, sastavljati vlastite planove treninga i pratiti napredak (kilaža, volumen, tjelesna težina) kroz vrijeme.
 
-## Tehnologije
+Radimo na Quasaru (Vue 3) za frontend, koji preko Capacitora buildamo i kao Android aplikaciju. Backend je Express + Prisma na MySQL-u.
 
-- **Frontend / mobilna aplikacija**: [Quasar Framework](https://quasar.dev) (Vue 3) + Capacitor (Android)
-- **Backend**: Node.js + Express (REST API)
-- **ORM**: Prisma
-- **Baza podataka**: MySQL
-- **Grafovi napretka**: Chart.js
+## Stack
 
-## Struktura repozitorija
+- Quasar / Vue 3, Capacitor za Android build
+- Node.js / Express API
+- Prisma ORM, MySQL
+- Chart.js za grafove napretka
 
-```
-backend/          Express API server + Prisma shema
-frontend/         Quasar aplikacija (web + Android putem Capacitora)
-```
+## Struktura
 
-## Preduvjeti
+- `backend/` — API server i Prisma shema
+- `frontend/` — Quasar app, i web i android (`frontend/src-capacitor/android`)
 
-- Node.js 22+ i npm
-- MySQL server (lokalno ili putem npr. XAMPP-a)
-- Za Android build: Android Studio (SDK, JDK)
+## Kako pokrenuti lokalno
 
-## Pokretanje backend servera
+Treba ti Node 22+, i MySQL server negdje (lokalno preko XAMPP-a/HeidiSQL-a ili slično). Za Android build treba i Android Studio.
+
+Backend:
 
 ```bash
 cd backend
 npm install
-copy .env.example .env      # i upiši stvarne podatke za spajanje na bazu
-npx prisma migrate dev      # kreira tablice u bazi
-npm run prisma:seed         # puni katalog vježbi početnim podacima
-npm run dev                 # pokreće server na http://localhost:3000
+copy .env.example .env      # upiši svoje podatke za spajanje na bazu
+npx prisma migrate dev
+npm run prisma:seed         # ubaci početni katalog vježbi
+npm run dev                 # http://localhost:3000
 ```
 
-## Pokretanje frontend aplikacije (web)
+Frontend:
 
 ```bash
 cd frontend
 npm install
-npm run dev                 # pokreće dev server na http://localhost:9000
+npm run dev                 # http://localhost:9000
 ```
 
-Aplikacija u dev modu očekuje da backend radi na `http://localhost:3000`.
+Frontend u dev modu gađa `http://localhost:3000` za API pozive, pa backend mora biti upaljen prije.
 
-## Android build (Capacitor)
+Android build ide preko `npx quasar build -m capacitor -T android` iz `frontend` foldera, ili jednostavnije `npx cap open android` pa run iz Android Studija. Prvi put treba proći kroz SDK setup wizard.
 
-Android platforma je već dodana u `frontend/src-capacitor/android`. Za build:
+## Baza
 
-```bash
-cd frontend
-npx quasar build -m capacitor -T android
-```
+Shema je u `backend/prisma/schema.prisma` (User, Exercise, WorkoutPlan, WorkoutSession, SetLog, Goal, BodyMeasurement...). Za pregled podataka koristimo HeidiSQL, ali radi svaki MySQL klijent.
 
-Prvi put je potrebno otvoriti projekt u Android Studiju (`npx cap open android` iz `frontend` foldera) i proći kroz jednokratni SDK setup wizard prije nego Gradle build uspije.
+## Što app radi
 
-## Baza podataka
+- Login/registracija (JWT)
+- Katalog vježbi po mišićnim skupinama, plus mogućnost dodavanja vlastitih
+- Planovi treninga (serije/ponavljanja/kilaža po vježbi)
+- Raspored treninga unaprijed
+- Unos odrađenih treninga i praćenje napretka kroz grafove
+- Ciljevi (postavljanje i praćenje)
 
-Baza `gym_tracker` upravlja se preko [HeidiSQL](https://www.heidisql.com/) ili bilo kojeg MySQL klijenta. Shema (tablice `User`, `Exercise`, `WorkoutPlan`, `WorkoutSession`, `SetLog`, `Goal`, `BodyMeasurement`, itd.) definirana je u `backend/prisma/schema.prisma`.
+## TODO
 
-## Funkcionalnosti
-
-- Registracija i prijava korisnika (JWT autentifikacija)
-- Katalog vježbi (predefinirane + korisničke vježbe) filtriran po mišićnoj skupini
-- Kreiranje predložaka treninga (planova) s ciljanim serijama/ponavljanjima/kilažom
-- Planiranje treninga unaprijed (raspored)
-- Evidencija odrađenih treninga — unos serija, ponavljanja i kilaže po vježbi
-- Praćenje napretka kroz grafove (napredak po vježbi, volumen po mišićnoj skupini, tjelesna težina kroz vrijeme)
-- Postavljanje i praćenje osobnih ciljeva
+- [ ] finalizirati dizajn statistike/grafova
+- [ ] error handling na frontendu (trenutno dosta generičnih poruka)
+- [ ] deploy negdje van localhosta za demo

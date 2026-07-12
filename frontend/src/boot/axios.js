@@ -1,8 +1,13 @@
 import axios from 'axios'
+import { Platform } from 'quasar'
 import { defineBoot } from '#q-app'
 import { useAuthStore } from '@/stores/auth'
 
-const api = axios.create({ baseURL: 'http://localhost:3000/api' })
+const baseURL = Platform.is.capacitor
+  ? 'http://10.0.2.2:3000/api'
+  : 'http://localhost:3000/api'
+
+const api = axios.create({ baseURL })
 
 api.interceptors.request.use((config) => {
   const auth = useAuthStore()
