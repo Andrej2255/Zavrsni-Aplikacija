@@ -1,80 +1,138 @@
 <template>
-  <q-page class="q-pa-md">
-    <div class="row items-center q-mb-md">
-      <div class="text-h5 col">Vježbe</div>
-      <q-btn color="primary" icon="add" label="Nova vježba" @click="showCreate = true" />
-    </div>
+  <q-page class="q-pa-md q-pa-lg-xl">
+    <div class="gt-wrap">
+      <PageHeader eyebrow="Katalog" title="Vježbe"
+        :subtitle="`${exercises.length} vježbi${muscleGroupFilter ? ' · ' + muscleGroupFilter : ''}`">
+        <template #actions>
+          <q-btn color="primary" unelevated icon="add" label="Nova vježba" @click="showCreate = true" />
+        </template>
+      </PageHeader>
 
-    <q-select
-      v-model="muscleGroupFilter"
-      :options="muscleGroupOptions"
-      label="Filtriraj po mišićnoj skupini"
-      clearable
-      outlined
-      dense
-      class="q-mb-md"
-      style="max-width: 300px"
-      @update:model-value="load"
-    />
+      <div class="row items-center q-gutter-sm q-mb-lg">
+        <q-chip clickable size="md" class="gt-filter-chip"
+          :class="{ 'gt-filter-chip--on': !muscleGroupFilter }"
+          :style="!muscleGroupFilter ? { background: 'var(--gt-primary)', color: '#fff' } : {}"
+          @click="setFilter(null)">Sve</q-chip>
+        <q-chip v-for="mg in muscleGroups" :key="mg" clickable size="md" class="gt-filter-chip"
+          :class="{ 'gt-filter-chip--on': muscleGroupFilter === mg }"
+          :style="muscleGroupFilter === mg ? { background: muscleGroupMeta(mg).color, color: '#fff' } : {}"
+          :icon="muscleGroupMeta(mg).icon" @click="setFilter(mg)">{{ mg }}</q-chip>
+      </div>
 
-    <q-list bordered separator>
-      <q-item v-for="ex in exercises" :key="ex.id">
-        <q-item-section>
-          <q-item-label>{{ ex.name }}</q-item-label>
-          <q-item-label caption>{{ ex.muscleGroup }} · {{ ex.equipment || 'bez opreme' }}</q-item-label>
-        </q-item-section>
-        <q-item-section side v-if="ex.isCustom">
-          <q-badge color="secondary">vlastita</q-badge>
-        </q-item-section>
-      </q-item>
-      <q-item v-if="exercises.length === 0">
-        <q-item-section class="text-grey">Nema vježbi za odabrani filter.</q-item-section>
-      </q-item>
-    </q-list>
+      <div class="row q-col-gutter-md">
+        <div v-for="ex in exercises" :key="ex.id" class="col-12 col-sm-6 col-md-4">
+          <q-card class="gt-card-hover full-height column">
+            <div class="gt-ex-media" :style="{ '--mg': muscleGroupMeta(ex.muscleGroup).color }">
+              <img v-if="exerciseImage(ex.name)" :src="exerciseImage(ex.name)" :alt="ex.name" class="gt-ex-img" />
+              <div v-else class="gt-ex-fallback" :style="{ background: muscleGroupGradient(ex.muscleGroup) }">
+                <q-icon :name="muscleGroupMeta(ex.muscleGroup).icon" size="40px" />
+              </div>
+              <span class="gt-ex-tag" :style="{ background: muscleGroupMeta(ex.muscleGroup).color }">
+                <q-icon :name="muscleGroupMeta(ex.muscleGroup).icon" size="13px" /> {{ ex.muscleGroup }}
+              </span>
+            </div>
+            <q-card-section class="col">
+              <div class="text-subtitle1 text-weight-bold ellipsis">{{ ex.name }}</div>
+              <div class="row items-center q-gutter-xs q-mt-xs">
+                <q-chip dense square class="gt-eq-chip" icon="sports_gymnastics">
+                  {{ ex.equipment || 'bez opreme' }}
+                </q-chip>
+                <q-badge v-if="ex.isCustom" color="secondary" label="vlastita" />
+              </div>
+              <div v-if="ex.description" class="text-body2 gt-muted q-mt-sm ellipsis-2-lines">{{ ex.description }}</div>
+            </q-card-section>
+          </q-card>
+        </div>
+      </div>
 
-    <q-dialog v-model="showCreate">
-      <q-card style="width: 400px">
-        <q-card-section class="text-h6">Nova vježba</q-card-section>
-        <q-card-section>
-          <q-form @submit="createExercise" class="q-gutter-md">
-            <q-input v-model="form.name" label="Naziv" outlined required />
-            <q-input v-model="form.muscleGroup" label="Mišićna skupina" outlined required />
-            <q-input v-model="form.equipment" label="Oprema (opcionalno)" outlined />
-            <q-input v-model="form.description" label="Opis (opcionalno)" type="textarea" outlined />
-            <q-btn type="submit" color="primary" label="Spremi" class="full-width" />
-          </q-form>
-        </q-card-section>
+      <q-card v-if="exercises.length === 0" flat class="gt-flat q-mt-md">
+        <EmptyState icon="fitness_center" title="Nema vježbi za odabrani filter"
+          caption="Promijeni filter ili dodaj vlastitu vježbu.">
+          <template #action><q-btn color="primary" unelevated icon="add" label="Nova vježba" @click="showCreate = true" /></template>
+        </EmptyState>
       </q-card>
-    </q-dialog>
+
+      <q-dialog v-model="showCreate">
+        <q-card style="width: 440px; max-width: 92vw">
+          <q-card-section class="text-h6">Nova vježba</q-card-section>
+          <q-separator />
+          <q-card-section>
+            <q-form @submit="createExercise" class="q-gutter-md">
+              <q-input v-model="form.name" label="Naziv" outlined required />
+              <q-select v-model="form.muscleGroup" :options="muscleGroups" label="Mišićna skupina" outlined required />
+              <q-input v-model="form.equipment" label="Oprema (opcionalno)" outlined />
+              <q-input v-model="form.description" label="Opis (opcionalno)" type="textarea" outlined autogrow />
+              <q-btn type="submit" color="primary" unelevated label="Spremi" class="full-width" />
+            </q-form>
+          </q-card-section>
+        </q-card>
+      </q-dialog>
+    </div>
   </q-page>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useQuasar } from 'quasar'
 import { api } from '@/boot/axios'
+import PageHeader from '@/components/PageHeader.vue'
+import EmptyState from '@/components/EmptyState.vue'
+import { MUSCLE_GROUPS as muscleGroups, muscleGroupMeta, muscleGroupGradient } from '@/utils/muscleGroups'
+import { exerciseImage } from '@/utils/exerciseImages'
 
+const $q = useQuasar()
 const exercises = ref([])
 const muscleGroupFilter = ref(null)
-const muscleGroupOptions = [
-  'Prsa', 'Noge', 'Leđa', 'Ramena', 'Ruke', 'Trbušnjaci',
-]
 
 const showCreate = ref(false)
 const form = ref({ name: '', muscleGroup: '', equipment: '', description: '' })
 
-async function load() {
+async function load () {
   const { data } = await api.get('/exercises', {
     params: muscleGroupFilter.value ? { muscleGroup: muscleGroupFilter.value } : {},
   })
   exercises.value = data.exercises
 }
 
-async function createExercise() {
+function setFilter (mg) {
+  muscleGroupFilter.value = mg
+  load()
+}
+
+async function createExercise () {
   await api.post('/exercises', form.value)
   showCreate.value = false
   form.value = { name: '', muscleGroup: '', equipment: '', description: '' }
+  $q.notify({ type: 'positive', message: 'Vježba dodana', icon: 'check' })
   await load()
 }
 
 onMounted(load)
 </script>
+
+<style scoped>
+.gt-filter-chip {
+  border: 1px solid var(--gt-border); font-weight: 700;
+  background: var(--gt-surface-2); color: var(--gt-ink);
+}
+.gt-filter-chip--on { border-color: transparent; }
+.gt-eq-chip { background: var(--gt-surface-2); color: var(--gt-muted); }
+.ellipsis-2-lines { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+.gt-ex-media {
+  position: relative; height: 168px; overflow: hidden;
+  border-bottom: 3px solid var(--mg);
+  background: #fff;
+}
+.gt-ex-img { width: 100%; height: 100%; object-fit: cover; object-position: center 42%; display: block; }
+.gt-ex-fallback {
+  width: 100%; height: 100%; display: grid; place-items: center; color: #fff;
+}
+.gt-ex-tag {
+  position: absolute; left: 10px; bottom: 10px;
+  display: inline-flex; align-items: center; gap: 4px;
+  color: #fff; font-weight: 800; font-size: .72rem;
+  padding: 4px 9px; border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,.25);
+}
+</style>
