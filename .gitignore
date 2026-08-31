@@ -5,6 +5,8 @@ node_modules/
 .env
 .env.local
 .env.*.local
+# backend/.env je namjerno ukljucen (spajanje na ucka.veleri.hr) da radi odmah nakon git clone
+!backend/.env
 
 # Backend
 backend/prisma/migrations/**/migration.sql.bak

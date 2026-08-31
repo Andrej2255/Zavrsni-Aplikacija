@@ -10,7 +10,7 @@ Stack: frontend Quasar/Vue (`http://localhost:9000`), backend Node + Express + P
 
 Aplikacija je namještena da koristi bazu `asmiljanic` na `ucka.veleri.hr`. Server je javno dostupan, pa radi s bilo kojeg računala s internetom — **bez lokalnog MySQL-a, bez HeidiSQL-a, bez uvoza.**
 
-Na bilo kojem računalu (uklj. profesorovo):
+Na bilo kojem računalu (uklj. profesorovo) — `backend\.env` **već dolazi s repozitorijem** i `prisma generate` se pokreće sam pri `npm install`:
 
 ```powershell
 git clone https://github.com/Andrej2255/Zavrsni-Aplikacija.git
@@ -18,26 +18,19 @@ cd Zavrsni-Aplikacija
 
 cd backend
 npm install
-# napravi backend\.env s 3 reda (vidi nize) ako ga nema
-npx prisma generate
 npm run dev
 
 # novi terminal:
-cd frontend
+cd ..\frontend
 npm install
 npm run dev
 ```
 
 Otvori `http://localhost:9000`, prijava `demo1788128039@gym.hr` / `demo1234`.
 
-`backend\.env` treba sadržavati:
-```
-DATABASE_URL="mysql://asmiljanic:11@ucka.veleri.hr:3306/asmiljanic"
-JWT_SECRET="gymtracker_tajni_kljuc_2026"
-PORT=3000
-```
+Preduvjeti: instaliran **Node.js** i **internet** (server `ucka.veleri.hr` je javno dostupan).
 
-> Ako je baza `asmiljanic` prazna: u HeidiSQL (sesija za `ucka`) učitaj `backend\gym_tracker_ucka_data.sql` (Query tab → paste → F9), pa su podaci opet tu.
+> Ako je baza `asmiljanic` prazna: u HeidiSQL (sesija za `ucka`) → Query tab → zalijepi sadržaj `backend\gym_tracker_ucka_data.sql` → F9.
 
 Sve ispod je alternativa s **lokalnim** MySQL-om (ako fakultetski server nije dostupan).
 
