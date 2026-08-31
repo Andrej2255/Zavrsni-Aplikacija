@@ -30,6 +30,10 @@
               <span class="gt-ex-tag" :style="{ background: muscleGroupMeta(ex.muscleGroup).color }">
                 <q-icon :name="muscleGroupMeta(ex.muscleGroup).icon" size="13px" /> {{ ex.muscleGroup }}
               </span>
+              <q-btn v-if="ex.isCustom" round dense unelevated icon="delete" class="gt-ex-del"
+                @click="confirmRemove(ex)">
+                <q-tooltip>Obriši vježbu</q-tooltip>
+              </q-btn>
             </div>
             <q-card-section class="col">
               <div class="text-subtitle1 text-weight-bold ellipsis">{{ ex.name }}</div>
@@ -107,6 +111,26 @@ async function createExercise () {
   await load()
 }
 
+function confirmRemove (ex) {
+  $q.dialog({
+    title: 'Obriši vježbu',
+    message: `Sigurno želiš obrisati vježbu "${ex.name}"?`,
+    cancel: { label: 'Odustani', flat: true },
+    ok: { label: 'Obriši', color: 'negative', unelevated: true },
+  }).onOk(async () => {
+    try {
+      await api.delete(`/exercises/${ex.id}`)
+      $q.notify({ type: 'positive', message: 'Vježba obrisana', icon: 'check' })
+      await load()
+    } catch (err) {
+      $q.notify({
+        type: 'negative',
+        message: err.response?.data?.error || 'Vježbu nije moguće obrisati (možda se koristi u planu ili treningu).',
+      })
+    }
+  })
+}
+
 onMounted(load)
 </script>
 
@@ -135,4 +159,12 @@ onMounted(load)
   padding: 4px 9px; border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0,0,0,.25);
 }
+.gt-ex-del {
+  position: absolute; top: 8px; right: 8px;
+  background: rgba(15, 12, 22, .62);
+  color: #fff;
+  backdrop-filter: blur(4px);
+  opacity: .92; transition: background-color .14s ease, transform .12s ease;
+}
+.gt-ex-del:hover { background: var(--q-negative, #F43F5E); transform: scale(1.06); }
 </style>
