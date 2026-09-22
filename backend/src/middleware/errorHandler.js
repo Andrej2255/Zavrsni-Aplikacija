@@ -1,16 +1,12 @@
 function errorHandler(err, req, res, next) {
   console.error(err);
 
-  if (err.name === 'ZodError') {
-    return res.status(400).json({ error: 'Validation failed', details: err.issues });
-  }
-
-  if (err.code === 'P2002') {
+  if (err.code === 'ER_DUP_ENTRY') {
     return res.status(409).json({ error: 'A record with this value already exists' });
   }
 
-  if (err.code === 'P2025') {
-    return res.status(404).json({ error: 'Record not found' });
+  if (err.code === 'ER_ROW_IS_REFERENCED_2' || err.code === 'ER_ROW_IS_REFERENCED') {
+    return res.status(409).json({ error: 'This record is used elsewhere and cannot be deleted' });
   }
 
   const status = err.status || 500;

@@ -1,0 +1,46 @@
+require('dotenv').config();
+const db = require('./config/db');
+
+const exercises = [
+  { name: 'Bench Press', muscleGroup: 'Prsa', equipment: 'Šipka' },
+  { name: 'Incline Dumbbell Press', muscleGroup: 'Prsa', equipment: 'Bučice' },
+  { name: 'Push Up', muscleGroup: 'Prsa', equipment: 'Tjelesna težina' },
+  { name: 'Squat', muscleGroup: 'Noge', equipment: 'Šipka' },
+  { name: 'Leg Press', muscleGroup: 'Noge', equipment: 'Sprava' },
+  { name: 'Lunges', muscleGroup: 'Noge', equipment: 'Bučice' },
+  { name: 'Deadlift', muscleGroup: 'Leđa', equipment: 'Šipka' },
+  { name: 'Pull Up', muscleGroup: 'Leđa', equipment: 'Tjelesna težina' },
+  { name: 'Barbell Row', muscleGroup: 'Leđa', equipment: 'Šipka' },
+  { name: 'Lat Pulldown', muscleGroup: 'Leđa', equipment: 'Sprava' },
+  { name: 'Overhead Press', muscleGroup: 'Ramena', equipment: 'Šipka' },
+  { name: 'Lateral Raise', muscleGroup: 'Ramena', equipment: 'Bučice' },
+  { name: 'Face Pull', muscleGroup: 'Ramena', equipment: 'Uže' },
+  { name: 'Bicep Curl', muscleGroup: 'Ruke', equipment: 'Bučice' },
+  { name: 'Tricep Pushdown', muscleGroup: 'Ruke', equipment: 'Uže' },
+  { name: 'Hammer Curl', muscleGroup: 'Ruke', equipment: 'Bučice' },
+  { name: 'Plank', muscleGroup: 'Trbušnjaci', equipment: 'Tjelesna težina' },
+  { name: 'Crunch', muscleGroup: 'Trbušnjaci', equipment: 'Tjelesna težina' },
+  { name: 'Hanging Leg Raise', muscleGroup: 'Trbušnjaci', equipment: 'Šipka' },
+  { name: 'Hip Thrust', muscleGroup: 'Noge', equipment: 'Šipka' },
+];
+
+async function main() {
+  let created = 0;
+  for (const exercise of exercises) {
+    const [existing] = await db.execute('SELECT id FROM Exercise WHERE name = ?', [exercise.name]);
+    if (existing.length === 0) {
+      await db.execute(
+        'INSERT INTO Exercise (name, muscleGroup, equipment) VALUES (?, ?, ?)',
+        [exercise.name, exercise.muscleGroup, exercise.equipment]
+      );
+      created += 1;
+    }
+  }
+  console.log(`Seeded ${created} new exercises (${exercises.length - created} already existed).`);
+  process.exit(0);
+}
+
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});

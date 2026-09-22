@@ -2,8 +2,6 @@
   "editor.bracketPairColorization.enabled": true,
   "editor.guides.bracketPairs": true,
   "search.exclude": {
-    "dist/": true,
-    ".quasar/": true,
-    "/quasar.config.js.temporary.*": true
+    "dist/": true
   }
 }

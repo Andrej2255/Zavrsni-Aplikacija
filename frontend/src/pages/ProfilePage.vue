@@ -1,54 +1,41 @@
 <template>
-  <q-page class="q-pa-md q-pa-lg-xl">
-    <div class="gt-wrap" style="max-width: 620px">
-      <PageHeader eyebrow="Račun" title="Profil" />
+  <div class="page-narrow" style="margin:0 auto">
+    <PageHeader eyebrow="Račun" title="Profil" />
 
-      <q-card class="gt-accent">
-        <div class="gt-profile-cover" :style="{ backgroundImage: `url(${cover})` }" />
-        <q-card-section class="gt-profile-body">
-          <q-avatar size="84px" color="primary" text-color="white" class="gt-profile-avatar text-h5 text-weight-bold">
-            {{ initials }}
-          </q-avatar>
-          <div class="text-h6 text-weight-bold q-mt-sm">{{ auth.user?.name }}</div>
-          <div class="gt-muted">{{ auth.user?.email }}</div>
-        </q-card-section>
+    <div class="card">
+      <div class="card-body" style="text-align:center">
+        <div class="avatar">{{ initials }}</div>
+        <h3 class="mt-sm">{{ auth.user?.name }}</h3>
+        <div class="muted">{{ auth.user?.email }}</div>
+      </div>
 
-        <q-separator />
-        <q-list>
-          <q-item>
-            <q-item-section avatar><q-icon name="badge" color="primary" /></q-item-section>
-            <q-item-section>
-              <q-item-label caption>Ime i prezime</q-item-label>
-              <q-item-label>{{ auth.user?.name }}</q-item-label>
-            </q-item-section>
-          </q-item>
-          <q-item>
-            <q-item-section avatar><q-icon name="mail" color="primary" /></q-item-section>
-            <q-item-section>
-              <q-item-label caption>Email</q-item-label>
-              <q-item-label>{{ auth.user?.email }}</q-item-label>
-            </q-item-section>
-          </q-item>
-        </q-list>
+      <div class="card-list-item">
+        <div class="grow">
+          <div class="caption">Ime i prezime</div>
+          <div class="title">{{ auth.user?.name }}</div>
+        </div>
+      </div>
+      <div class="card-list-item">
+        <div class="grow">
+          <div class="caption">Email</div>
+          <div class="title">{{ auth.user?.email }}</div>
+        </div>
+      </div>
 
-        <q-separator />
-        <q-card-actions class="q-pa-md">
-          <q-btn unelevated color="negative" icon="logout" label="Odjava" @click="onLogout" />
-        </q-card-actions>
-      </q-card>
+      <div class="card-body">
+        <button class="btn btn-danger" @click="onLogout">Odjava</button>
+      </div>
     </div>
-  </q-page>
+  </div>
 </template>
 
 <script setup>
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
+import { auth, logout } from '@/auth'
 import PageHeader from '@/components/PageHeader.vue'
-import cover from '@/assets/img/dashboard-banner.jpg'
 
 const router = useRouter()
-const auth = useAuthStore()
 
 const initials = computed(() =>
   (auth.user?.name || '?')
@@ -60,31 +47,18 @@ const initials = computed(() =>
     .toUpperCase()
 )
 
-function onLogout () {
-  auth.logout()
+function onLogout() {
+  logout()
   router.push('/login')
 }
 </script>
 
 <style scoped>
-.gt-profile-cover {
-  height: 130px;
-  background-size: cover;
-  background-position: center;
-  position: relative;
-}
-.gt-profile-cover::after {
-  content: "";
-  position: absolute; inset: 0;
-  background: linear-gradient(120deg, rgba(94,59,238,.85), rgba(192,38,211,.6) 60%, rgba(18,185,129,.4));
-}
-.gt-profile-body {
-  text-align: center;
-  padding-top: 0;
-}
-.gt-profile-avatar {
-  margin-top: -46px;
-  border: 4px solid var(--gt-surface);
-  box-shadow: var(--gt-shadow);
+.avatar {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: var(--primary); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.5rem; font-weight: 700;
+  margin: 0 auto;
 }
 </style>

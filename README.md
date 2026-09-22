@@ -2,7 +2,7 @@
 
 Završni rad — aplikacija za praćenje treninga. Korisnik unosi treninge, sastavlja planove i prati napredak kroz vrijeme.
 
-Frontend je Quasar/Vue, backend Node + Express + Prisma, baza MySQL. Android verzija ide preko Capacitora.
+Frontend je Vue 3 + Vite (obični HTML/CSS, bez UI frameworka), backend Node + Express s običnim SQL upitima (mysql2), baza MySQL.
 
 ## Funkcionalnosti
 

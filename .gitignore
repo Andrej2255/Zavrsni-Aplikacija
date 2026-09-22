@@ -8,22 +8,9 @@ node_modules/
 # backend/.env je namjerno ukljucen (spajanje na ucka.veleri.hr) da radi odmah nakon git clone
 !backend/.env
 
-# Backend
-backend/prisma/migrations/**/migration.sql.bak
-
 # Frontend build output
 frontend/dist/
-frontend/.quasar/
 frontend/node_modules/
-
-# Capacitor / Android
-frontend/src-capacitor/node_modules/
-frontend/src-capacitor/android/app/build/
-frontend/src-capacitor/android/build/
-frontend/src-capacitor/android/.gradle/
-frontend/src-capacitor/android/local.properties
-frontend/src-capacitor/android/capacitor-cordova-android-plugins/
-frontend/src-capacitor/www/
 
 # Editor / OS
 .vscode/*

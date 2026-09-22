@@ -2,7 +2,7 @@
 
 Upute za pokretanje na **svom računalu** i na **tuđem računalu** (npr. za obranu).
 
-Stack: frontend Quasar/Vue (`http://localhost:9000`), backend Node + Express + Prisma (`http://localhost:3000`), baza MySQL/MariaDB.
+Stack: frontend Vue 3 + Vite (`http://localhost:9000`), backend Node + Express + obični SQL upiti preko mysql2 (`http://localhost:3000`), baza MySQL/MariaDB.
 
 ---
 
@@ -10,7 +10,7 @@ Stack: frontend Quasar/Vue (`http://localhost:9000`), backend Node + Express + P
 
 Aplikacija je namještena da koristi bazu `asmiljanic` na `ucka.veleri.hr`. Server je javno dostupan, pa radi s bilo kojeg računala s internetom — **bez lokalnog MySQL-a, bez HeidiSQL-a, bez uvoza.**
 
-Na bilo kojem računalu (uklj. profesorovo) — `backend\.env` **već dolazi s repozitorijem** i `prisma generate` se pokreće sam pri `npm install`:
+Na bilo kojem računalu (uklj. profesorovo) — `backend\.env` **već dolazi s repozitorijem**, nema dodatnih koraka nakon `npm install`:
 
 ```powershell
 git clone https://github.com/Andrej2255/Zavrsni-Aplikacija.git
@@ -136,16 +136,7 @@ PORT=3000
 
 Spremi i zatvori.
 
-### 5. Generiraj Prisma klijent
-
-```powershell
-cd backend
-npx prisma generate
-```
-
-Migracije **NE** treba pokretati — dump već sadrži sve tablice.
-
-### 6. Pokreni (dva terminala)
+### 5. Pokreni (dva terminala)
 
 **Terminal 1 — backend:**
 
@@ -165,7 +156,7 @@ npm run dev
 
 Automatski se otvara `http://localhost:9000`.
 
-### 7. Prijava
+### 6. Prijava
 
 ```
 email:    demo1788128039@gym.hr
@@ -185,7 +176,6 @@ Ima gotove planove, odrađene treninge, ciljeve i grafove napretka. Ili klikni *
 | `Access denied for user 'root'@'localhost'` | Kriva root lozinka u `.env`. |
 | Greška o `utf8mb4_0900_ai_ci` pri uvozu baze | Računalo ima stari MySQL 5.7. U datoteci `backend\gym_tracker_dump.sql` zamijeni sve `utf8mb4_0900_ai_ci` u `utf8mb4_general_ci` i ponovi uvoz. |
 | Port 3000 ili 9000 zauzet | Zatvori druge Node procese: `Get-Process node \| Stop-Process -Force` |
-| `npx prisma generate` javlja grešku | Ponovi `npm install` u mapi `backend`. |
 | Frontend se digne na portu 9001 umjesto 9000 | Port 9000 je zauzet starim procesom; nije problem, samo otvori adresu koju ispiše. |
 
 ---

@@ -1,64 +1,67 @@
-const { z } = require('zod');
-const prisma = require('../config/db');
+const db = require('../config/db');
 
-const scheduleSchema = z.object({
-  planId: z.number().int().nullish(),
-  scheduledDate: z.string().datetime().or(z.string().min(1)),
-  status: z.enum(['planned', 'completed', 'skipped']).optional(),
-});
+async function attachPlan(item) {
+  if (!item.planId) {
+    item.plan = null;
+    return item;
+  }
+  const [rows] = await db.execute('SELECT * FROM WorkoutPlan WHERE id = ?', [item.planId]);
+  item.plan = rows[0] || null;
+  return item;
+}
 
 exports.list = async (req, res) => {
-  const items = await prisma.scheduledWorkout.findMany({
-    where: { userId: req.userId },
-    include: { plan: true },
-    orderBy: { scheduledDate: 'asc' },
-  });
-  res.json({ scheduledWorkouts: items });
+  const [rows] = await db.execute(
+    'SELECT * FROM ScheduledWorkout WHERE userId = ? ORDER BY scheduledDate ASC',
+    [req.userId]
+  );
+  const scheduledWorkouts = [];
+  for (const row of rows) scheduledWorkouts.push(await attachPlan(row));
+  res.json({ scheduledWorkouts });
 };
 
 exports.create = async (req, res) => {
-  const data = scheduleSchema.parse(req.body);
-  const item = await prisma.scheduledWorkout.create({
-    data: {
-      userId: req.userId,
-      planId: data.planId,
-      scheduledDate: new Date(data.scheduledDate),
-      status: data.status || 'planned',
-    },
-    include: { plan: true },
-  });
-  res.status(201).json({ scheduledWorkout: item });
+  const { planId, scheduledDate, status } = req.body;
+  if (!scheduledDate) {
+    return res.status(400).json({ error: 'scheduledDate is required' });
+  }
+
+  const [result] = await db.execute(
+    'INSERT INTO ScheduledWorkout (userId, planId, scheduledDate, status) VALUES (?, ?, ?, ?)',
+    [req.userId, planId || null, new Date(scheduledDate), status || 'planned']
+  );
+  const [rows] = await db.execute('SELECT * FROM ScheduledWorkout WHERE id = ?', [result.insertId]);
+  res.status(201).json({ scheduledWorkout: await attachPlan(rows[0]) });
 };
 
 exports.update = async (req, res) => {
   const id = Number(req.params.id);
-  const data = scheduleSchema.partial().parse(req.body);
-
-  const existing = await prisma.scheduledWorkout.findUnique({ where: { id } });
+  const [rows] = await db.execute('SELECT * FROM ScheduledWorkout WHERE id = ?', [id]);
+  const existing = rows[0];
   if (!existing || existing.userId !== req.userId) {
     return res.status(404).json({ error: 'Scheduled workout not found' });
   }
 
-  const item = await prisma.scheduledWorkout.update({
-    where: { id },
-    data: {
-      ...(data.planId !== undefined && { planId: data.planId }),
-      ...(data.scheduledDate && { scheduledDate: new Date(data.scheduledDate) }),
-      ...(data.status && { status: data.status }),
-    },
-    include: { plan: true },
-  });
-  res.json({ scheduledWorkout: item });
+  const planId = req.body.planId !== undefined ? req.body.planId : existing.planId;
+  const scheduledDate = req.body.scheduledDate ? new Date(req.body.scheduledDate) : existing.scheduledDate;
+  const status = req.body.status || existing.status;
+
+  await db.execute(
+    'UPDATE ScheduledWorkout SET planId = ?, scheduledDate = ?, status = ? WHERE id = ?',
+    [planId, scheduledDate, status, id]
+  );
+  const [updated] = await db.execute('SELECT * FROM ScheduledWorkout WHERE id = ?', [id]);
+  res.json({ scheduledWorkout: await attachPlan(updated[0]) });
 };
 
 exports.remove = async (req, res) => {
   const id = Number(req.params.id);
-
-  const existing = await prisma.scheduledWorkout.findUnique({ where: { id } });
+  const [rows] = await db.execute('SELECT * FROM ScheduledWorkout WHERE id = ?', [id]);
+  const existing = rows[0];
   if (!existing || existing.userId !== req.userId) {
     return res.status(404).json({ error: 'Scheduled workout not found' });
   }
 
-  await prisma.scheduledWorkout.delete({ where: { id } });
+  await db.execute('DELETE FROM ScheduledWorkout WHERE id = ?', [id]);
   res.status(204).send();
 };

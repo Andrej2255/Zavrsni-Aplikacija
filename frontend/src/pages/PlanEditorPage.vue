@@ -1,72 +1,77 @@
 <template>
-  <q-page class="q-pa-md q-pa-lg-xl" v-if="plan">
-    <div class="gt-wrap" style="max-width: 820px">
-      <q-btn flat dense no-caps icon="arrow_back" label="Planovi" color="primary" to="/plans" class="q-mb-sm" />
+  <div v-if="plan" class="page-narrow" style="margin:0 auto">
+    <router-link to="/plans" class="btn btn-ghost btn-sm mt-sm" style="margin-bottom:10px">← Planovi</router-link>
 
-      <PageHeader eyebrow="Plan treninga" :title="plan.name"
-        :subtitle="plan.description || `${plan.exercises.length} vježbi u planu`">
-        <template #actions>
-          <q-btn color="primary" unelevated icon="add" label="Dodaj vježbu" @click="showAdd = true" />
-        </template>
-      </PageHeader>
+    <PageHeader eyebrow="Plan treninga" :title="plan.name" :subtitle="plan.description || `${plan.exercises.length} vježbi u planu`">
+      <template #actions>
+        <button class="btn btn-primary" @click="showAdd = true">+ Dodaj vježbu</button>
+      </template>
+    </PageHeader>
 
-      <q-card class="gt-accent">
-        <q-list separator>
-          <q-item v-for="(pe, i) in plan.exercises" :key="pe.id">
-            <q-item-section avatar>
-              <q-avatar rounded :style="{ background: muscleGroupMeta(pe.exercise.muscleGroup).color + '22', color: muscleGroupMeta(pe.exercise.muscleGroup).color }">
-                {{ i + 1 }}
-              </q-avatar>
-            </q-item-section>
-            <q-item-section>
-              <q-item-label class="text-weight-medium">{{ pe.exercise.name }}</q-item-label>
-              <q-item-label caption>
-                {{ pe.targetSets || '–' }} serije × {{ pe.targetReps || '–' }} ponavljanja
-                <span v-if="pe.targetWeight"> @ {{ pe.targetWeight }} kg</span>
-              </q-item-label>
-            </q-item-section>
-            <q-item-section side>
-              <q-btn flat round dense icon="delete" color="grey-6" @click="removeExercise(pe.id)" />
-            </q-item-section>
-          </q-item>
-        </q-list>
-        <div v-if="plan.exercises.length === 0">
-          <EmptyState icon="fitness_center" title="Plan još nema vježbi"
-            caption="Dodaj prvu vježbu i postavi ciljane serije, ponavljanja i kilažu.">
-            <template #action><q-btn color="primary" unelevated icon="add" label="Dodaj vježbu" @click="showAdd = true" /></template>
-          </EmptyState>
+    <div class="card">
+      <div v-for="(pe, i) in plan.exercises" :key="pe.id" class="card-list-item">
+        <span class="badge" :style="{ background: muscleGroupColor(pe.exercise.muscleGroup) }">{{ i + 1 }}</span>
+        <div class="grow">
+          <div class="title">{{ pe.exercise.name }}</div>
+          <div class="caption">
+            {{ pe.targetSets || '–' }} serije × {{ pe.targetReps || '–' }} ponavljanja
+            <span v-if="pe.targetWeight"> @ {{ pe.targetWeight }} kg</span>
+          </div>
         </div>
-      </q-card>
+        <button class="btn btn-icon btn-ghost" title="Ukloni" @click="removeExercise(pe.id)">🗑</button>
+      </div>
 
-      <q-dialog v-model="showAdd">
-        <q-card style="width: 440px; max-width: 92vw">
-          <q-card-section class="text-h6">Dodaj vježbu u plan</q-card-section>
-          <q-separator />
-          <q-card-section>
-            <q-form @submit="addExercise" class="q-gutter-md">
-              <q-select v-model="addForm.exerciseId" :options="exerciseOptions" option-value="id" option-label="name"
-                emit-value map-options label="Vježba" outlined required />
-              <div class="row q-col-gutter-sm">
-                <q-input class="col" v-model.number="addForm.targetSets" label="Serije" type="number" outlined />
-                <q-input class="col" v-model.number="addForm.targetReps" label="Ponavljanja" type="number" outlined />
-                <q-input class="col" v-model.number="addForm.targetWeight" label="Kilaža (kg)" type="number" outlined />
-              </div>
-              <q-btn type="submit" color="primary" unelevated label="Dodaj" class="full-width" />
-            </q-form>
-          </q-card-section>
-        </q-card>
-      </q-dialog>
+      <EmptyState
+        v-if="plan.exercises.length === 0"
+        title="Plan još nema vježbi"
+        caption="Dodaj prvu vježbu i postavi ciljane serije, ponavljanja i kilažu."
+      >
+        <template #action>
+          <button class="btn btn-primary" @click="showAdd = true">+ Dodaj vježbu</button>
+        </template>
+      </EmptyState>
     </div>
-  </q-page>
+
+    <Modal v-model="showAdd">
+      <div class="modal-header">Dodaj vježbu u plan</div>
+      <div class="modal-body">
+        <form @submit.prevent="addExercise">
+          <div class="field">
+            <label>Vježba</label>
+            <select v-model="addForm.exerciseId" class="input" required>
+              <option :value="null" disabled>Odaberi...</option>
+              <option v-for="ex in exerciseOptions" :key="ex.id" :value="ex.id">{{ ex.name }}</option>
+            </select>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label>Serije</label>
+              <input v-model.number="addForm.targetSets" type="number" class="input" />
+            </div>
+            <div class="field">
+              <label>Ponavljanja</label>
+              <input v-model.number="addForm.targetReps" type="number" class="input" />
+            </div>
+            <div class="field">
+              <label>Kilaža (kg)</label>
+              <input v-model.number="addForm.targetWeight" type="number" class="input" />
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">Dodaj</button>
+        </form>
+      </div>
+    </Modal>
+  </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { api } from '@/boot/axios'
+import { api } from '@/api'
 import PageHeader from '@/components/PageHeader.vue'
 import EmptyState from '@/components/EmptyState.vue'
-import { muscleGroupMeta } from '@/utils/muscleGroups'
+import Modal from '@/components/Modal.vue'
+import { muscleGroupColor } from '@/utils/muscleGroups'
 
 const route = useRoute()
 const planId = route.params.id
@@ -76,17 +81,17 @@ const exerciseOptions = ref([])
 const showAdd = ref(false)
 const addForm = ref({ exerciseId: null, targetSets: 3, targetReps: 10, targetWeight: null })
 
-async function loadPlan () {
-  const { data } = await api.get(`/plans/${planId}`)
+async function loadPlan() {
+  const data = await api.get(`/plans/${planId}`)
   plan.value = data.plan
 }
 
-async function loadExercises () {
-  const { data } = await api.get('/exercises')
+async function loadExercises() {
+  const data = await api.get('/exercises')
   exerciseOptions.value = data.exercises
 }
 
-async function addExercise () {
+async function addExercise() {
   await api.post(`/plans/${planId}/exercises`, {
     ...addForm.value,
     order: plan.value.exercises.length,
@@ -96,12 +101,13 @@ async function addExercise () {
   await loadPlan()
 }
 
-async function removeExercise (peId) {
+async function removeExercise(peId) {
   await api.delete(`/plans/${planId}/exercises/${peId}`)
   await loadPlan()
 }
 
 onMounted(async () => {
-  await Promise.all([loadPlan(), loadExercises()])
+  await loadPlan()
+  await loadExercises()
 })
 </script>
